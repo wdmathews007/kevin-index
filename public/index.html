@@ -6,6 +6,7 @@
         <title>Kevin Index</title>
         <link rel="stylesheet" href="styles.css" />
         <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     </head>
     <body>
         <div class="main-container">
@@ -17,8 +18,7 @@
                 </p>
                 <div id="results">
                     <div id="heatmap-status" class="heatmap-status">
-                        Rendering demo spectrum. Paste text and press Go to
-                        refresh it.
+                        Upload a PDF to analyze.
                     </div>
                     <div id="heatmap"></div>
                     <div class="legend-row" aria-hidden="true">
@@ -37,18 +37,24 @@
             </div>
 
             <div class="right-panel" id="input-panel">
-                <h2>Input Text</h2>
+                <h2>Input PDF</h2>
                 <p class="panel-copy">
-                    Uses the live `/api/calculate` endpoint when available and
-                    falls back to demo data only if the request fails.
+                    Choose a PDF, extract its text in the browser, then send the
+                    extracted text to `/api/calculate`.
                 </p>
-                <textarea
-                    id="text-input"
-                    rows="15"
-                    cols="50"
-                    placeholder="Enter text to analyze..."
-                ></textarea>
-                <button id="go-button">Go</button>
+                <label class="upload-card" for="pdf-input">
+                    <span class="upload-title">Select PDF</span>
+                    <span class="upload-copy">
+                        Upload a text-based PDF for analysis.
+                    </span>
+                    <input
+                        id="pdf-input"
+                        type="file"
+                        accept="application/pdf"
+                    />
+                </label>
+                <div id="file-meta" class="file-meta">No PDF selected.</div>
+                <button id="go-button">Analyze PDF</button>
             </div>
         </div>
         <script src="scripts.js"></script>

@@ -29,66 +29,15 @@ const RULES = [
 
 const elements = {
   button: document.getElementById("go-button"),
+  fileInput: document.getElementById("pdf-input"),
+  fileMeta: document.getElementById("file-meta"),
   heatmap: document.getElementById("heatmap"),
   indexValue: document.getElementById("kevin-index-value"),
   status: document.getElementById("heatmap-status"),
-  textInput: document.getElementById("text-input"),
 };
 
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function hashText(text) {
-  let hash = 0;
-
-  for (let index = 0; index < text.length; index += 1) {
-    hash = (hash * 31 + text.charCodeAt(index)) | 0;
-  }
-
-  return Math.abs(hash);
-}
-
-function createDemoAnalysis(text) {
-  const normalized = text.trim();
-  const seed = hashText(normalized || "kevin-index-demo");
-  const wordCount = normalized ? normalized.split(/\s+/).length : 0;
-  const sentenceCount = normalized
-    ? Math.max((normalized.match(/[.!?]+/g) || []).length, 1)
-    : 1;
-  const avgSentenceLength = wordCount / sentenceCount;
-  const punctuationCount = (normalized.match(/[,:;()[\]!]/g) || []).length;
-  const punctuationDensity = punctuationCount / Math.max(wordCount, 1);
-
-  const rules = RULES.map((rule, index) => {
-    const phase = seed / 97 + index * 0.71;
-    const wave = Math.sin(phase) * 1.35 + Math.cos(phase / 2.3) * 0.65;
-    const structureBias = (avgSentenceLength - 18) / 7;
-    const punctuationBias = (punctuationDensity - 0.03) * 18;
-    const signedZ = clamp(
-      wave +
-        structureBias * (index % 3 === 0 ? 0.5 : -0.22) +
-        punctuationBias * (index % 4 === 0 ? 0.8 : -0.18),
-      -3.2,
-      3.2,
-    );
-
-    return {
-      key: rule.key,
-      label: rule.label,
-      signedZ,
-      direction: signedZ >= 0 ? "AI" : "human",
-    };
-  });
-
-  const finalIndex = rules.reduce((total, rule) => total + rule.signedZ, 0);
-
-  return {
-    mode: "demo",
-    rules,
-    finalIndex,
-  };
-}
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 function normalizeRuleScore(ruleScore, index) {
   const key =
@@ -186,6 +135,62 @@ async function fetchAnalysis(text) {
   return normalizeAnalysisPayload(await response.json());
 }
 
+function resetIndex() {
+  elements.indexValue.textContent = "-";
+  elements.indexValue.classList.remove("aiward", "humanward");
+}
+
+function formatBytes(byteCount) {
+  if (!Number.isFinite(byteCount) || byteCount <= 0) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB"];
+  const exponent = Math.min(
+    Math.floor(Math.log(byteCount) / Math.log(1024)),
+    units.length - 1,
+  );
+  const value = byteCount / 1024 ** exponent;
+
+  return `${value.toFixed(value >= 10 || exponent === 0 ? 0 : 1)} ${units[exponent]}`;
+}
+
+function updateFileMeta(file) {
+  if (!file) {
+    elements.fileMeta.textContent = "No PDF selected.";
+    return;
+  }
+
+  elements.fileMeta.textContent = `${file.name} • ${formatBytes(file.size)}`;
+}
+
+async function extractPdfText(file) {
+  const data = new Uint8Array(await file.arrayBuffer());
+  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const pageTexts = [];
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    elements.status.textContent = `Extracting text from page ${pageNumber} of ${pdf.numPages}...`;
+
+    const page = await pdf.getPage(pageNumber);
+    const textContent = await page.getTextContent();
+    const text = textContent.items
+      .map((item) => ("str" in item ? item.str : ""))
+      .join(" ")
+      .trim();
+
+    if (text) {
+      pageTexts.push(text);
+    }
+  }
+
+  return pageTexts.join("\n\n").trim();
+}
+
+function clearHeatmap() {
+  Plotly.purge(elements.heatmap);
+}
+
 function renderIndex(finalIndex) {
   const formatted = `${finalIndex >= 0 ? "+" : ""}${finalIndex.toFixed(2)}`;
 
@@ -252,44 +257,61 @@ function renderHeatmap(analysis) {
   );
 
   renderIndex(analysis.finalIndex);
-  elements.status.textContent =
-    analysis.mode === "api"
-      ? "Live data loaded from /api/calculate."
-      : "Demo mode: backend unavailable, showing frontend-generated placeholder scores.";
+  elements.status.textContent = "Live data loaded from /api/calculate.";
 }
 
-async function analyzeText() {
-  const text = elements.textInput.value;
+async function analyzePdf() {
+  const file = elements.fileInput.files?.[0];
+
+  if (!file) {
+    clearHeatmap();
+    resetIndex();
+    elements.status.textContent = "Choose a PDF to analyze.";
+    return;
+  }
+
+  if (file.type && file.type !== "application/pdf") {
+    clearHeatmap();
+    resetIndex();
+    elements.status.textContent = "Selected file is not a PDF.";
+    return;
+  }
 
   elements.button.disabled = true;
-  elements.status.textContent = "Rendering heatmap...";
+  elements.status.textContent = "Loading PDF...";
 
   try {
-    const apiAnalysis = await fetchAnalysis(text);
+    const text = await extractPdfText(file);
 
-    if (apiAnalysis) {
-      renderHeatmap(apiAnalysis);
-      return;
+    if (!text) {
+      throw new Error("No extractable text found in the PDF.");
     }
 
-    renderHeatmap(createDemoAnalysis(text));
+    elements.status.textContent = "Sending extracted text to /api/calculate...";
+    const apiAnalysis = await fetchAnalysis(text);
+
+    if (!apiAnalysis) {
+      throw new Error("API returned no rule scores.");
+    }
+
+    renderHeatmap(apiAnalysis);
   } catch (error) {
-    renderHeatmap(createDemoAnalysis(text));
+    clearHeatmap();
+    resetIndex();
+    elements.status.textContent = error.message.includes("text")
+      ? "Unable to extract usable text from this PDF."
+      : "Unable to analyze the PDF with /api/calculate.";
   } finally {
     elements.button.disabled = false;
   }
 }
 
-elements.button.addEventListener("click", analyzeText);
-elements.textInput.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-    analyzeText();
-  }
+elements.button.addEventListener("click", analyzePdf);
+elements.fileInput.addEventListener("change", () => {
+  updateFileMeta(elements.fileInput.files?.[0] || null);
+  clearHeatmap();
+  resetIndex();
+  elements.status.textContent = elements.fileInput.files?.[0]
+    ? "PDF selected. Click Analyze PDF."
+    : "Upload a PDF to analyze.";
 });
-
-elements.textInput.value = [
-  "This interface is rendering a frontend-only spectrogram view for grammar rules.",
-  "When the backend arrives, the same component can swap from demo scores to real signed z-scores.",
-].join(" ");
-
-renderHeatmap(createDemoAnalysis(elements.textInput.value));

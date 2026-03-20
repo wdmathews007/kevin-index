@@ -202,37 +202,72 @@ function renderIndex(finalIndex) {
 function renderHeatmap(analysis) {
   const scores = analysis.rules.map((rule) => rule.signedZ);
   const labels = analysis.rules.map((rule) => rule.label);
-  const colorLimit = Math.max(2.5, ...scores.map((score) => Math.abs(score)));
+  const magnitudes = scores.map((score) => Math.abs(score));
+  const amplitudeLimit = Math.max(2.5, ...magnitudes);
+  const upperSignal = magnitudes;
+  const lowerSignal = magnitudes.map((value) => -value);
 
   Plotly.react(
     elements.heatmap,
     [
       {
-        type: "heatmap",
+        type: "scatter",
         x: labels,
-        y: [""],
-        z: [scores],
-        zmin: -colorLimit,
-        zmax: colorLimit,
-        zmid: 0,
-        colorscale: [
-          [0, "#d95f4d"],
-          [0.5, "#f4f2ef"],
-          [1, "#2378c7"],
-        ],
+        y: upperSignal,
+        mode: "lines",
+        line: {
+          color: "#49a2ff",
+          width: 1.5,
+          shape: "spline",
+          smoothing: 0.55,
+        },
         customdata: analysis.rules.map((rule) => [rule.key, rule.direction]),
         hovertemplate:
           "<b>%{x}</b><br>" +
           "Rule: %{customdata[0]}<br>" +
-          "Signed z-score: %{z:.2f}<br>" +
+          "Signed z-score: %{customdata[2]:.2f}<br>" +
+          "Mirrored amplitude: %{y:.2f}<br>" +
           "Direction: %{customdata[1]}-ward<extra></extra>",
-        showscale: false,
-        xgap: 2,
-        ygap: 2,
+      },
+      {
+        type: "scatter",
+        x: labels,
+        y: lowerSignal,
+        mode: "lines",
+        line: {
+          color: "#49a2ff",
+          width: 1.5,
+          shape: "spline",
+          smoothing: 0.55,
+        },
+        fill: "tonexty",
+        fillcolor: "rgba(73, 162, 255, 0.78)",
+        customdata: analysis.rules.map((rule) => [
+          rule.key,
+          rule.direction,
+          rule.signedZ,
+        ]),
+        hovertemplate:
+          "<b>%{x}</b><br>" +
+          "Rule: %{customdata[0]}<br>" +
+          "Signed z-score: %{customdata[2]:.2f}<br>" +
+          "Mirrored amplitude: %{y:.2f}<br>" +
+          "Direction: %{customdata[1]}-ward<extra></extra>",
+      },
+      {
+        type: "scatter",
+        x: labels,
+        y: labels.map(() => 0),
+        mode: "lines",
+        line: {
+          color: "rgba(244, 242, 239, 0.58)",
+          width: 1,
+        },
+        hoverinfo: "skip",
       },
     ],
     {
-      margin: { t: 8, r: 12, b: 92, l: 12 },
+      margin: { t: 8, r: 12, b: 92, l: 56 },
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)",
       xaxis: {
@@ -244,10 +279,15 @@ function renderHeatmap(analysis) {
         fixedrange: true,
       },
       yaxis: {
-        showticklabels: false,
+        range: [-amplitudeLimit * 1.12, amplitudeLimit * 1.12],
+        tickfont: { color: "rgba(240, 244, 248, 0.78)", size: 11 },
         showgrid: false,
         zeroline: false,
         fixedrange: true,
+        title: {
+          text: "Amplitude",
+          font: { color: "rgba(240, 244, 248, 0.78)", size: 12 },
+        },
       },
     },
     {

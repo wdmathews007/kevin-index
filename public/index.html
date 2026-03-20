@@ -39,8 +39,8 @@
             <div class="right-panel" id="input-panel">
                 <h2>Input Text</h2>
                 <p class="panel-copy">
-                    Frontend-only for now. If a future `/analyze` endpoint
-                    exists, this UI will use it automatically.
+                    Uses the live `/api/calculate` endpoint when available and
+                    falls back to demo data only if the request fails.
                 </p>
                 <textarea
                     id="text-input"

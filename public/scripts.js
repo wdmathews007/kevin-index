@@ -111,7 +111,45 @@ function normalizeRuleScore(ruleScore, index) {
 }
 
 function normalizeAnalysisPayload(payload) {
-  const rawRules = payload.rules || payload.rule_scores || payload.scores || [];
+  const rawRules =
+    payload.rules ||
+    payload.rule_scores ||
+    payload.scores ||
+    payload.stats ||
+    [];
+
+  if (
+    Array.isArray(rawRules) &&
+    rawRules.every((value) => typeof value === "number")
+  ) {
+    const rules = rawRules.map((value, index) => {
+      const fallbackRule = RULES[index] || {
+        key: `rule_${index + 1}`,
+        label: `Rule ${index + 1}`,
+      };
+      const signedZ = Number.isFinite(value) ? value : 0;
+
+      return {
+        key: fallbackRule.key,
+        label: fallbackRule.label,
+        signedZ,
+        direction: signedZ >= 0 ? "AI" : "human",
+      };
+    });
+
+    const rawIndex = Number(
+      payload.finalIndex ?? payload.final_index ?? payload.index,
+    );
+    const finalIndex = Number.isFinite(rawIndex)
+      ? rawIndex
+      : rules.reduce((total, rule) => total + rule.signedZ, 0);
+
+    return {
+      mode: "api",
+      rules,
+      finalIndex,
+    };
+  }
 
   if (!Array.isArray(rawRules) || rawRules.length === 0) {
     return null;
@@ -133,7 +171,7 @@ function normalizeAnalysisPayload(payload) {
 }
 
 async function fetchAnalysis(text) {
-  const response = await fetch("/analyze", {
+  const response = await fetch("/api/calculate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -216,8 +254,8 @@ function renderHeatmap(analysis) {
   renderIndex(analysis.finalIndex);
   elements.status.textContent =
     analysis.mode === "api"
-      ? "Live data loaded from /analyze."
-      : "Demo mode: backend not available yet, showing frontend-generated signed z-scores.";
+      ? "Live data loaded from /api/calculate."
+      : "Demo mode: backend unavailable, showing frontend-generated placeholder scores.";
 }
 
 async function analyzeText() {

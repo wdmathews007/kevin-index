@@ -5,8 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kevin Index</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    
-    
-    </body>
+    <div class="main-container">
+        <div class="left-panel" id="data-panel">
+            <h2>Data Output</h2>
+            <h3 id="kevin-index-display" style="margin-bottom: 15px; color: #2980b9;">Your Kevin Index is: -</h3>
+            <div id="results" style="position: relative;">
+                <canvas id="statsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="right-panel" id="input-panel">
+            <h2>Input Text</h2>
+            <textarea id="text-input" rows="15" cols="50" placeholder="Enter text to analyze..."></textarea>
+            <br>
+            <button id="go-button">Go</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>

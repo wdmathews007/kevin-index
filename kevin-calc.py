@@ -39,7 +39,6 @@ app = flask.Flask(__name__, static_folder=str(PUBLIC_DIR), static_url_path="")
 def serve_index():
     return app.send_static_file("index.html")
 
-
 @app.get("/<path:asset_path>")
 def serve_public_asset(asset_path):
     if (PUBLIC_DIR / asset_path).is_file():

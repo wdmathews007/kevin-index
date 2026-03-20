@@ -29,12 +29,8 @@ HUMAN_CACHE = TEXT_DATA_DIR / "human_samples.json"
 MAX_ABS_Z_SCORE = 4.0
 DISPLAY_WEIGHT_MIN = 0.8
 DISPLAY_WEIGHT_MAX = 1.25
-RULE_DIRECTION_OVERRIDES = {
-    "colonFreq": 1.0,
-}
-DISPLAY_WEIGHT_OVERRIDES = {
-    "colonFreq": 1.2,
-}
+RULE_DIRECTION_OVERRIDES = {}
+DISPLAY_WEIGHT_OVERRIDES = {}
 
 
 def _mean(values):
@@ -106,6 +102,7 @@ def get_rule_baselines():
 def calc_kevin_index(text):
     rule_scores = []
     baselines = get_rule_baselines()
+    weighted_index = 0.0
 
     for rule_fn, baseline in zip(kevin_index, baselines):
         value = rule_fn(text)
@@ -113,16 +110,19 @@ def calc_kevin_index(text):
             "direction"
         ]
         clipped_z = max(-MAX_ABS_Z_SCORE, min(MAX_ABS_Z_SCORE, signed_z))
+        model_weight = baseline["strength"]
+        weighted_index += clipped_z * model_weight
         rule_scores.append(
             {
                 "key": rule_fn.__name__,
                 "signedZ": clipped_z,
                 "displayWeight": baseline["display_weight"],
+                "modelWeight": model_weight,
                 "direction": "AI" if baseline["direction"] > 0 else "human",
             }
         )
 
-    return sum(rule["signedZ"] for rule in rule_scores), rule_scores
+    return weighted_index, rule_scores
 
 
 def extract_pdf_text(pdf_path):

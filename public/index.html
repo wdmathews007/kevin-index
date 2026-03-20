@@ -14,7 +14,8 @@
                 <h2>Visualization</h2>
                 <p class="panel-copy">
                     Mirrored Plotly signal with one position per grammar rule.
-                    Each z-score is reflected above and below the zero axis.
+                    The graph uses display weights for balance; hover shows the
+                    raw signed z-score.
                 </p>
                 <div id="results">
                     <div id="heatmap-status" class="heatmap-status">
@@ -24,7 +25,7 @@
                     <div class="legend-row" aria-hidden="true">
                         <span>Mirrored Signal</span>
                         <div class="legend-bar"></div>
-                        <span>|z-score| amplitude</span>
+                        <span>weighted for display</span>
                     </div>
                 </div>
                 <div class="index-card" aria-live="polite">

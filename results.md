@@ -23,10 +23,6 @@
 | sentences_structure_std_dev  |   9.61057   |    10.1167     |  0.506129   | human         |
 | sentences_structure_long     |   2.911     |     8.80435    |  5.89335    | human         |
 | sentences_structure_short    |   8.54084   |     8.49475    |  0.0460943  | AI            |
-| avg_para_length              |  26.9002    |     4.86506    | 22.0352     | AI            |
-| variance_para_length         |   0.312433  |     3.86374    |  3.55131    | human         |
-| std_dev_para_length          |   0.312433  |     3.86374    |  3.55131    | human         |
-| contraction_rate             |   0         |     0.0126578  |  0.0126578  | human         |
 | filler_word_rate             |   0.244848  |     0.261613   |  0.016765   | human         |
 | discourse_marker_rate        |   0.173997  |     0.132099   |  0.0418978  | AI            |
 | type_token_ratio             |   0.334903  |     0.579181   |  0.244279   | human         |

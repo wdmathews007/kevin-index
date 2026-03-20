@@ -17,10 +17,6 @@ const RULES = [
   { key: "sentences_structure_std_dev", label: "Sentence Std" },
   { key: "sentences_structure_long", label: "Long Sentences" },
   { key: "sentences_structure_short", label: "Short Sentences" },
-  { key: "avg_para_length", label: "Paragraph Avg" },
-  { key: "variance_para_length", label: "Paragraph Var" },
-  { key: "std_dev_para_length", label: "Paragraph Std" },
-  { key: "contraction_rate", label: "Contractions" },
   { key: "filler_word_rate", label: "Filler Words" },
   { key: "discourse_marker_rate", label: "Discourse Markers" },
   { key: "type_token_ratio", label: "Type-Token Ratio" },
@@ -55,7 +51,10 @@ function normalizeRuleScore(ruleScore, index) {
     key,
     label: ruleScore.label || ruleScore.display_name || fallbackLabel,
     signedZ: Number.isFinite(signedZ) ? signedZ : 0,
-    direction: signedZ >= 0 ? "AI" : "human",
+    direction: ruleScore.direction || (signedZ >= 0 ? "AI" : "human"),
+    displayWeight: Number(
+      ruleScore.displayWeight ?? ruleScore.display_weight ?? 1,
+    ),
   };
 }
 
@@ -83,6 +82,7 @@ function normalizeAnalysisPayload(payload) {
         label: fallbackRule.label,
         signedZ,
         direction: signedZ >= 0 ? "AI" : "human",
+        displayWeight: 1,
       };
     });
 
@@ -202,15 +202,24 @@ function renderIndex(finalIndex) {
 function renderHeatmap(analysis) {
   const scores = analysis.rules.map((rule) => rule.signedZ);
   const labels = analysis.rules.map((rule) => rule.label);
-  const magnitudes = scores.map((score) => Math.abs(score));
-  const amplitudeLimit = Math.max(2.5, ...magnitudes);
-  const upperSignal = magnitudes;
-  const lowerSignal = magnitudes.map((value) => -value);
+  const weightedScores = analysis.rules.map((rule) => {
+    const weight = Number.isFinite(rule.displayWeight)
+      ? rule.displayWeight
+      : 1.0;
+    return rule.signedZ * weight;
+  });
+  const scoreLimit = Math.max(
+    2.5,
+    ...weightedScores.map((score) => Math.abs(score)),
+  );
+  const upperSignal = weightedScores;
+  const lowerSignal = weightedScores.map((value) => -value);
   const customData = analysis.rules.map((rule, index) => [
     rule.key,
     rule.direction,
     rule.signedZ,
-    magnitudes[index],
+    weightedScores[index],
+    Number.isFinite(rule.displayWeight) ? rule.displayWeight : 1.0,
   ]);
 
   Plotly.react(
@@ -231,8 +240,9 @@ function renderHeatmap(analysis) {
         hovertemplate:
           "<b>%{x}</b><br>" +
           "Rule: %{customdata[0]}<br>" +
-          "Signed z-score: %{customdata[2]:.2f}<br>" +
-          "Mirrored amplitude: %{customdata[3]:.2f}<br>" +
+          "Raw z-score: %{customdata[2]:.2f}<br>" +
+          "Display z-score: %{customdata[3]:.2f}<br>" +
+          "Weight: %{customdata[4]:.2f}<br>" +
           "Direction: %{customdata[1]}-ward<extra></extra>",
       },
       {
@@ -252,8 +262,9 @@ function renderHeatmap(analysis) {
         hovertemplate:
           "<b>%{x}</b><br>" +
           "Rule: %{customdata[0]}<br>" +
-          "Signed z-score: %{customdata[2]:.2f}<br>" +
-          "Mirrored amplitude: %{customdata[3]:.2f}<br>" +
+          "Raw z-score: %{customdata[2]:.2f}<br>" +
+          "Display z-score: %{customdata[3]:.2f}<br>" +
+          "Weight: %{customdata[4]:.2f}<br>" +
           "Direction: %{customdata[1]}-ward<extra></extra>",
       },
       {
@@ -281,16 +292,17 @@ function renderHeatmap(analysis) {
         fixedrange: true,
       },
       yaxis: {
-        range: [-amplitudeLimit * 1.12, amplitudeLimit * 1.12],
+        range: [-scoreLimit * 1.08, scoreLimit * 1.08],
         tickfont: { color: "rgba(240, 244, 248, 0.78)", size: 11 },
         showgrid: false,
         zeroline: false,
         fixedrange: true,
         title: {
-          text: "Amplitude",
+          text: "Display z-score",
           font: { color: "rgba(240, 244, 248, 0.78)", size: 12 },
         },
       },
+      showlegend: false,
     },
     {
       displayModeBar: false,

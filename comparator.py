@@ -1,9 +1,9 @@
-import os
-import sys
-import json
-import zipfile
 import csv
 import io
+import json
+import os
+import sys
+import zipfile
 
 import datasets
 import tabulate
@@ -17,17 +17,14 @@ from grammer_rules import (
     punctuationRules,
     scentenceStarters,
     sentenceStructure,
-    structuralDiscourse,
     wordChoice,
 )
-
 
 all_measures = [
     punctuationRules.rules,
     scentenceStarters.rules,
     sentenceStructure.rule,
-    structuralDiscourse.rule,
-    wordChoice.rules,
+    wordChoice.rules[1:],
 ]
 
 all_measures = [item for sublist in all_measures for item in sublist]
@@ -45,7 +42,14 @@ def load_idmgsp_ai():
             for row in reader:
                 if row.get("label") == "1":
                     text = " ".join(
-                        filter(None, [row.get("abstract"), row.get("introduction"), row.get("conclusion")])
+                        filter(
+                            None,
+                            [
+                                row.get("abstract"),
+                                row.get("introduction"),
+                                row.get("conclusion"),
+                            ],
+                        )
                     ).strip()
                     if text:
                         texts.append(text)
@@ -78,9 +82,7 @@ if __name__ == "__main__":
     for text in ai_texts:
         ai_stats.append([measure(text) for measure in all_measures])
 
-    ai_avg_stats = [
-        sum(s) / len(ai_stats) for s in zip(*ai_stats)
-    ]
+    ai_avg_stats = [sum(s) / len(ai_stats) for s in zip(*ai_stats)]
 
     print("Processing human generated files...")
 
@@ -115,9 +117,7 @@ if __name__ == "__main__":
     for text in human_texts:
         human_stats.append([measure(text) for measure in all_measures])
 
-    human_avg_stats = [
-        sum(s) / len(human_stats) for s in zip(*human_stats)
-    ]
+    human_avg_stats = [sum(s) / len(human_stats) for s in zip(*human_stats)]
 
     data = [["measure name", "AI papers", "human papers", "diff", "AI or human"]]
 
@@ -137,7 +137,9 @@ if __name__ == "__main__":
     md_path = "results.md"
     with open(md_path, "w") as f:
         f.write("# Comparator Results\n\n")
-        f.write(f"- AI samples: {len(ai_texts)} (tum-nlp/IDMGSP label=1, GPT-3 generated, abstract+intro+conclusion)\n")
+        f.write(
+            f"- AI samples: {len(ai_texts)} (tum-nlp/IDMGSP label=1, GPT-3 generated, abstract+intro+conclusion)\n"
+        )
         f.write(f"- Human samples: {len(human_texts)} (allenai/peS2o v2, pre-2020)\n\n")
         f.write(tabulate.tabulate(data, headers="firstrow", tablefmt="github"))
         f.write("\n")

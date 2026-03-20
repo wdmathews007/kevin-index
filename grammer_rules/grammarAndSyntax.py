@@ -1,47 +1,71 @@
 import re
-import spacy
 
-nlp = spacy.load("en_core_web_sm")
+from grammer_rules._text_utils import percentage, sentences
+
+try:
+    import spacy
+except ModuleNotFoundError:
+    spacy = None
+
+
+_NLP = None
+
+
+def _get_nlp():
+    global _NLP
+
+    if spacy is None:
+        raise RuntimeError("spaCy is required for grammarAndSyntax metrics")
+
+    if _NLP is None:
+        _NLP = spacy.load("en_core_web_sm")
+
+    return _NLP
+
 
 def passive_voice_rate(text):
-    doc = nlp(text)
-    sentences = list(doc.sents)
-    if not sentences:
+    doc = _get_nlp()(text)
+    text_sentences = list(doc.sents)
+    if not text_sentences:
         return 0.0
-        
+
     passive_count = sum(1 for token in doc if token.dep_ == "auxpass")
-    return (passive_count / len(sentences)) * 100
+    return percentage(passive_count, len(text_sentences))
+
 
 def question_rate(text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
-    question_sentences = [s.strip() for s in re.findall(r"[^.!?]+[?]", text)]
+    text_sentences = sentences(text)
+    question_sentences = [
+        s.strip() for s in re.findall(r"[^.!?]+[?]", text) if s.strip()
+    ]
+    return percentage(len(question_sentences), len(text_sentences))
 
-    return len(question_sentences) / len(sentences) * 100
 
 def adverb_rate(text):
-    doc = nlp(text)
+    doc = _get_nlp()(text)
     words = [token for token in doc if not token.is_punct and not token.is_space]
     if not words:
         return 0.0
-        
+
     adverb_count = sum(1 for token in words if token.pos_ == "ADV")
-    return (adverb_count / len(words)) * 100
-    
+    return percentage(adverb_count, len(words))
+
 
 def noun_phrase_density(text):
-    doc = nlp(text)
+    doc = _get_nlp()(text)
     words = [token for token in doc if not token.is_punct and not token.is_space]
     if not words:
         return 0.0
-        
+
     noun_phrases = list(doc.noun_chunks)
-    return (len(noun_phrases) / len(words)) * 100
+    return percentage(len(noun_phrases), len(words))
+
 
 def subordinate_clause_rate(text):
-    doc = nlp(text)
+    doc = _get_nlp()(text)
     words = [token for token in doc if not token.is_punct and not token.is_space]
     if not words:
         return 0.0
-        
+
     sconj_count = sum(1 for token in words if token.pos_ == "SCONJ")
-    return (sconj_count / len(words)) * 100
+    return percentage(sconj_count, len(words))

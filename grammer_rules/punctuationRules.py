@@ -1,124 +1,39 @@
-#from collections import Counter 
+from grammer_rules._text_utils import word_chunks
 
-def splitter(n, s):
-    pieces = s.split()
-    return (" ".join(pieces[i:i+n]) for i in range(0, len(pieces), n))
 
-text = "12; 3456 124 345 23 45;"
+def _average_punctuation_per_chunk(text, markers):
+    chunks = word_chunks(text, 100)
+    if not chunks:
+        return 0
+
+    return sum(
+        sum(chunk.count(marker) for marker in markers) for chunk in chunks
+    ) / len(chunks)
+
 
 def semicolonFreq(text):
-    num = 0
-    numList = []
-    avg = 0
+    return _average_punctuation_per_chunk(text, [";"])
 
-    for i in splitter(100, text):
-        numList.append(i.count(";"))
-        num += 1
-    
-    for i in numList:
-        avg += i
-
-    avg = avg/num
-
-    return avg
 
 def commaFreq(text):
-        num = 0
-        numList = []
-        avg = 0
+    return _average_punctuation_per_chunk(text, [","])
 
-        for i in splitter(100, text):
-            numList.append(i.count(","))
-            num += 1
-    
-        for i in numList:
-            avg += i
-
-        avg = avg/num
-
-        return avg
 
 def emmdashFreq(text):
-    num = 0
-    numList = []
-    avg = 0
+    return _average_punctuation_per_chunk(text, ["—"])
 
-    for i in splitter(100, text):
-        numList.append(i.count("—"))
-        num += 1
-    
-    for i in numList:
-        avg += i
-
-    avg = avg/num
-
-    return avg    
 
 def ellipsisFreq(text):
-    num = 0
-    numList = []
-    avg = 0
+    return _average_punctuation_per_chunk(text, ["..."])
 
-    for i in splitter(100, text):
-        numList.append(i.count("..."))
-        num += 1
-    
-    for i in numList:
-        avg += i
-
-    avg = avg/num
-
-    return avg  
 
 def exclamationFreq(text):
-    num = 0
-    numList = []
-    avg = 0
+    return _average_punctuation_per_chunk(text, ["!"])
 
-    for i in splitter(100, text):
-        numList.append(i.count("!"))
-        num += 1
-    
-    for i in numList:
-        avg += i
-
-    avg = avg/num
-
-    return avg  
 
 def colonFreq(text):
-    num = 0
-    numList = []
-    avg = 0
+    return _average_punctuation_per_chunk(text, [":"])
 
-    for i in splitter(100, text):
-        numList.append(i.count(":"))
-        num += 1
-    
-    for i in numList:
-        avg += i
-
-    avg = avg/num
-
-    return avg  
 
 def parenthesesFreq(text):
-    num = 0
-    numList = []
-    avg = 0
-
-    for i in splitter(100, text):
-        numList.append(i.count("("))
-        num += 1
-    
-    for i in numList:
-        avg += i
-
-    avg = avg/num
-
-    return avg  
-
-    
-if __name__ == "__main__":
-    number = semicolonFreq(text)
-    print(number)
+    return _average_punctuation_per_chunk(text, ["(", ")"])

@@ -1,13 +1,10 @@
 import math
-import re
 
-
-def _sentences(text):
-    return [s.strip() for s in re.findall(r"[^.!?]+(?:[.!?]|$)", text) if s.strip()]
+from grammer_rules._text_utils import normalized_words, percentage, sentences
 
 
 def _sentence_lengths(text):
-    return [len(sentence.split()) for sentence in _sentences(text)]
+    return [len(normalized_words(sentence)) for sentence in sentences(text)]
 
 
 def sentences_structure_avg(text):
@@ -28,12 +25,16 @@ def sentences_structure_variance(text):
     return math.sqrt(variance)
 
 
+def sentences_structure_std_dev(text):
+    return sentences_structure_variance(text)
+
+
 def sentences_structure_long(text):
     lengths = _sentence_lengths(text)
     if not lengths:
         return 0
 
-    return len([length for length in lengths if length > 40]) / len(lengths) * 100
+    return percentage(len([length for length in lengths if length > 40]), len(lengths))
 
 
 def sentences_structure_short(text):
@@ -41,4 +42,4 @@ def sentences_structure_short(text):
     if not lengths:
         return 0
 
-    return len([length for length in lengths if length < 5]) / len(lengths) * 100
+    return percentage(len([length for length in lengths if length < 5]), len(lengths))

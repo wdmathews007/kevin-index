@@ -1,35 +1,41 @@
-import re
+from grammer_rules._text_utils import percentage, sentence_starts_with, sentences
 
-def sentences_starter_pronouns (text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
 
-    discourse_markers = ["she", "they", "he", "we", "you"]
-    
-    return len([s for s in sentences if s.lower().startswith(tuple(discourse_markers))]) / len(sentences) * 100
+def _sentence_starter_rate(text, starters):
+    text_sentences = sentences(text)
+    if not text_sentences:
+        return 0
 
-def sentences_starter_discourse (text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
+    count = sum(
+        1
+        for sentence in text_sentences
+        if any(sentence_starts_with(sentence, starter) for starter in starters)
+    )
+    return percentage(count, len(text_sentences))
 
-    discourse_markers = ["however", "furthermore", "moreover", "additionally", "in conclusion"]
-    
-    return len([s for s in sentences if s.lower().startswith(tuple(discourse_markers))]) / len(sentences) * 100
 
-def sentences_starter_the (text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
-    
-    return len([s for s in sentences if s.lower().startswith("and")]) / len(sentences) * 100
+def sentences_starter_pronouns(text):
+    return _sentence_starter_rate(text, ["she", "they", "he", "we", "you"])
 
-def sentences_starter_but (text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
-    
-    return len([s for s in sentences if s.lower().startswith("but")]) / len(sentences) * 100
 
-def sentences_starter_i (text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
-    
-    return len([s for s in sentences if s.lower().startswith("i")]) / len(sentences) * 100
+def sentences_starter_discourse(text):
+    return _sentence_starter_rate(
+        text,
+        ["however", "furthermore", "moreover", "additionally", "in conclusion"],
+    )
 
-def sentences_starter_the (text):
-    sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
-    
-    return len([s for s in sentences if s.lower().startswith("the")]) / len(sentences) * 100
+
+def sentences_starter_and(text):
+    return _sentence_starter_rate(text, ["and"])
+
+
+def sentences_starter_but(text):
+    return _sentence_starter_rate(text, ["but"])
+
+
+def sentences_starter_i(text):
+    return _sentence_starter_rate(text, ["i"])
+
+
+def sentences_starter_the(text):
+    return _sentence_starter_rate(text, ["the"])

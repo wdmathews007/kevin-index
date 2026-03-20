@@ -1,3 +1,5 @@
+import re
+
 def sentences_starter_pronouns (text):
     sentences = [s.strip() for s in re.findall(r"[^.!?]+[.!?]", text)]
 

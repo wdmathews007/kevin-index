@@ -5,13 +5,23 @@ from pathlib import Path
 import flask
 from pypdf import PdfReader
 
+from grammer_rules import (
+    punctuationRules,
+    scentenceStarters,
+    sentenceStructure,
+    structuralDiscourse,
+    wordChoice,
+)
 
-def test(text):
-    return 1
+kevin_index = [
+    punctuationRules.rules,
+    scentenceStarters.rules,
+    sentenceStructure.rule,
+    structuralDiscourse.rule,
+    wordChoice.rules,
+]
 
-
-kevin_index = [(test, 2.0)]
-
+kevin_index = [item for sublist in kevin_index for item in sublist]
 
 def calc_kevin_index(text):
     index = 0
@@ -38,6 +48,17 @@ app = flask.Flask(__name__, static_folder=str(PUBLIC_DIR), static_url_path="")
 @app.get("/")
 def serve_index():
     return app.send_static_file("index.html")
+
+@app.post("/api/calculate")
+def calculate_api():
+    data = flask.request.get_json()
+    if not data or "text" not in data:
+        return flask.jsonify({"error": "No text provided"}), 400
+        
+    text = data.get("text", "")
+    index, vals = calc_kevin_index(text)
+    
+    return flask.jsonify({"index": index, "stats": vals})
 
 @app.get("/<path:asset_path>")
 def serve_public_asset(asset_path):

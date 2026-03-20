@@ -1,13 +1,11 @@
 import sys
 from pypdf import PdfReader
-
-def semicolon_rate(text):
-    rate = 3
-    #calc rate
-    return rate
+import re
 
 kevin_index = [
-    (semicolon_rate, 2.0)
+    (sentences_starter_the, 1.0),
+    (sentences_starter_but, 1.0),
+    (sentences_starter_i, 1.0),
 ]
 
 def calc_kevin_index(text):

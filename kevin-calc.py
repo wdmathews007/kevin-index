@@ -23,15 +23,20 @@ kevin_index = [
 
 kevin_index = [item for sublist in kevin_index for item in sublist]
 
+weights = [
+    
+]
+
 def calc_kevin_index(text):
     index = 0
     stat_vals = []
 
-    for stat in kevin_index:
-        val = stat[0](text)
+    i = 0
+    for i in range(len(kevin_index)):
+        val = kevin_index[i](text)
         stat_vals.append(val)
 
-        index += val * stat[1]
+        index += val * weights[i]
 
     return index, stat_vals
 
@@ -80,18 +85,4 @@ def print_usage():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print_usage()
-        raise SystemExit(1)
-
-    if sys.argv[1] == "serve":
-        run_server()
-        raise SystemExit(0)
-
-    pdf_path = sys.argv[1]
-    text = extract_pdf_text(pdf_path)
-
-    print(text)
-    index, vals = calc_kevin_index(text)
-
-    print(f"Kevin index of this text is {index}")
+    run_server()

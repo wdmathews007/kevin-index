@@ -2,10 +2,11 @@ import sys
 from pypdf import PdfReader
 import re
 
+def test(text):
+    return 1
+
 kevin_index = [
-    (sentences_starter_the, 1.0),
-    (sentences_starter_but, 1.0),
-    (sentences_starter_i, 1.0),
+    (test, 2.0)
 ]
 
 def calc_kevin_index(text):
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     for page in reader.pages:
         text += page.extract_text()
 
+    print(text)
     index, vals = calc_kevin_index(text)
 
     print(f"Kevin index of this text is {index}")

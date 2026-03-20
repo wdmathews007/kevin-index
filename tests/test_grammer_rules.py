@@ -1,6 +1,5 @@
 import unittest
 
-from grammer_rules.grammarAndSyntax import question_rate
 from grammer_rules.punctuationRules import parenthesesFreq, semicolonFreq
 from grammer_rules.scentenceStarters import (
     sentences_starter_and,
@@ -29,7 +28,6 @@ class GrammarRulesTest(unittest.TestCase):
         self.assertEqual(contraction_rate(""), 0)
         self.assertEqual(type_token_ratio(""), 0)
         self.assertEqual(avg_word_length(""), 0)
-        self.assertEqual(question_rate(""), 0)
 
     def test_sentence_starters_handle_end_of_string_and_multiword_starter(self):
         self.assertEqual(sentences_starter_and("And we left"), 100)

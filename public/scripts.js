@@ -206,6 +206,12 @@ function renderHeatmap(analysis) {
   const amplitudeLimit = Math.max(2.5, ...magnitudes);
   const upperSignal = magnitudes;
   const lowerSignal = magnitudes.map((value) => -value);
+  const customData = analysis.rules.map((rule, index) => [
+    rule.key,
+    rule.direction,
+    rule.signedZ,
+    magnitudes[index],
+  ]);
 
   Plotly.react(
     elements.heatmap,
@@ -221,12 +227,12 @@ function renderHeatmap(analysis) {
           shape: "spline",
           smoothing: 0.55,
         },
-        customdata: analysis.rules.map((rule) => [rule.key, rule.direction]),
+        customdata: customData,
         hovertemplate:
           "<b>%{x}</b><br>" +
           "Rule: %{customdata[0]}<br>" +
           "Signed z-score: %{customdata[2]:.2f}<br>" +
-          "Mirrored amplitude: %{y:.2f}<br>" +
+          "Mirrored amplitude: %{customdata[3]:.2f}<br>" +
           "Direction: %{customdata[1]}-ward<extra></extra>",
       },
       {
@@ -242,16 +248,12 @@ function renderHeatmap(analysis) {
         },
         fill: "tonexty",
         fillcolor: "rgba(73, 162, 255, 0.78)",
-        customdata: analysis.rules.map((rule) => [
-          rule.key,
-          rule.direction,
-          rule.signedZ,
-        ]),
+        customdata: customData,
         hovertemplate:
           "<b>%{x}</b><br>" +
           "Rule: %{customdata[0]}<br>" +
           "Signed z-score: %{customdata[2]:.2f}<br>" +
-          "Mirrored amplitude: %{y:.2f}<br>" +
+          "Mirrored amplitude: %{customdata[3]:.2f}<br>" +
           "Direction: %{customdata[1]}-ward<extra></extra>",
       },
       {

@@ -37,3 +37,13 @@ def colonFreq(text):
 
 def parenthesesFreq(text):
     return _average_punctuation_per_chunk(text, ["(", ")"])
+
+rules = [
+    semicolonFreq,
+    commaFreq,
+    emmdashFreq,
+    ellipsisFreq,
+    exclamationFreq,
+    colonFreq,
+    parenthesesFreq
+]

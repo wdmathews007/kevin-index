@@ -69,3 +69,11 @@ def subordinate_clause_rate(text):
 
     sconj_count = sum(1 for token in words if token.pos_ == "SCONJ")
     return percentage(sconj_count, len(words))
+
+rule = [
+    passive_voice_rate,
+    question_rate,
+    adverb_rate,
+    noun_phrase_density,
+    subordinate_clause_rate
+]

@@ -116,3 +116,11 @@ def avg_word_length(text):
         return 0
 
     return sum(len(word) for word in words) / len(words)
+
+rules = [
+    contraction_rate,
+    filler_word_rate,
+    discourse_marker_rate,
+    type_token_ratio,
+    avg_word_length
+]

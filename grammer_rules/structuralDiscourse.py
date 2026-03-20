@@ -27,3 +27,9 @@ def variance_para_length(text):
 
 def std_dev_para_length(text):
     return variance_para_length(text)
+
+rule = [
+    avg_para_length,
+    variance_para_length,
+    std_dev_para_length
+]

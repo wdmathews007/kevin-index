@@ -39,3 +39,12 @@ def sentences_starter_i(text):
 
 def sentences_starter_the(text):
     return _sentence_starter_rate(text, ["the"])
+
+rules = [
+    sentences_starter_pronouns,
+    sentences_starter_discourse,
+    sentences_starter_and,
+    sentences_starter_but,
+    sentences_starter_i,
+    sentences_starter_the
+]

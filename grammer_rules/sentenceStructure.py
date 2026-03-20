@@ -43,3 +43,11 @@ def sentences_structure_short(text):
         return 0
 
     return percentage(len([length for length in lengths if length < 5]), len(lengths))
+
+rule = [
+    sentences_structure_avg,
+    sentences_structure_variance,
+    sentences_structure_std_dev,
+    sentences_structure_long,
+    sentences_structure_short
+]

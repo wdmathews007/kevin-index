@@ -14,7 +14,6 @@
           pip
           virtualenv
           pypdf
-          re
         ]);
       in {
         devShells.default = pkgs.mkShell {

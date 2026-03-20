@@ -1,28 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kevin Index</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <div class="main-container">
-        <div class="left-panel" id="data-panel">
-            <h2>Data Output</h2>
-            <h3 id="kevin-index-display" style="margin-bottom: 15px; color: #2980b9;">Your Kevin Index is: -</h3>
-            <div id="results" style="position: relative;">
-                <canvas id="statsChart"></canvas>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kevin Index</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    </head>
+    <body>
+        <div class="main-container">
+            <div class="left-panel" id="data-panel">
+                <h2>Visualization</h2>
+                <p class="panel-copy">
+                    Single-row Plotly heatmap with one cell per grammar rule.
+                    Cool tones lean AI-ward; warm tones lean human-ward.
+                </p>
+                <div id="results">
+                    <div id="heatmap-status" class="heatmap-status">
+                        Rendering demo spectrum. Paste text and press Go to
+                        refresh it.
+                    </div>
+                    <div id="heatmap"></div>
+                    <div class="legend-row" aria-hidden="true">
+                        <span>Human-ward</span>
+                        <div class="legend-bar"></div>
+                        <span>AI-ward</span>
+                    </div>
+                </div>
+                <div class="index-card" aria-live="polite">
+                    <span class="index-label">Final Index</span>
+                    <strong id="kevin-index-value" class="index-value"
+                        >-</strong
+                    >
+                    <p class="index-copy">Sum of all signed z-scores</p>
+                </div>
+            </div>
+
+            <div class="right-panel" id="input-panel">
+                <h2>Input Text</h2>
+                <p class="panel-copy">
+                    Frontend-only for now. If a future `/analyze` endpoint
+                    exists, this UI will use it automatically.
+                </p>
+                <textarea
+                    id="text-input"
+                    rows="15"
+                    cols="50"
+                    placeholder="Enter text to analyze..."
+                ></textarea>
+                <button id="go-button">Go</button>
             </div>
         </div>
-        
-        <div class="right-panel" id="input-panel">
-            <h2>Input Text</h2>
-            <textarea id="text-input" rows="15" cols="50" placeholder="Enter text to analyze..."></textarea>
-            <br>
-            <button id="go-button">Go</button>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
+        <script src="scripts.js"></script>
+    </body>
+</html>

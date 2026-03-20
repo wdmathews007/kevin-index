@@ -24,7 +24,32 @@ kevin_index = [
 kevin_index = [item for sublist in kevin_index for item in sublist]
 
 weights = [
-    
+    -10.0,
+    3,
+    5,
+    1,
+    -2,
+    -3,
+    2,
+    1,
+    -3,
+    -3,
+    -3,
+    3,
+    -3,
+    -2,
+    -2,
+    -2,
+    3,
+    3,
+    -2,
+    -2,
+    -4,
+    -4,
+    3,
+    -3,
+    -3,
+    -3
 ]
 
 def calc_kevin_index(text):
